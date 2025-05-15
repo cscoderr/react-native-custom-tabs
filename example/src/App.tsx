@@ -1,5 +1,13 @@
-import { multiply } from 'react-native-custom-tabs';
-import { Text, View, StyleSheet } from 'react-native';
+import {
+  closeCustomTabs,
+  CustomTabsActivityHeightResizeBehavior,
+  CustomTabsCloseButtonPosition,
+  CustomTabsShareState,
+  launch,
+  multiply,
+  ViewControllerModalPresentationStyle,
+} from 'react-native-custom-tabs';
+import { Text, View, StyleSheet, Button, Dimensions } from 'react-native';
 import { useState, useEffect } from 'react';
 
 export default function App() {
@@ -12,6 +20,40 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text>Result: {result}</Text>
+      <Button
+        title="Close"
+        onPress={async () => {
+          await closeCustomTabs();
+        }}
+      />
+      <Button
+        title="Launch URL"
+        onPress={async () => {
+          await launch(
+            'https://www.google.com',
+            false,
+            {
+              shareState: CustomTabsShareState.off,
+              closeButton: {
+                position: CustomTabsCloseButtonPosition.start,
+              },
+              partial: {
+                initialHeight: Dimensions.get('window').height * 0.95,
+                activityHeightResizeBehavior:
+                  CustomTabsActivityHeightResizeBehavior.fixed,
+              },
+            },
+            {
+              modalPresentationStyle:
+                ViewControllerModalPresentationStyle.pageSheet,
+              pageSheet: {
+                detents: ['large'],
+                preferredCornerRadius: 16,
+              },
+            }
+          );
+        }}
+      />
     </View>
   );
 }
