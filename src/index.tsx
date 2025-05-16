@@ -160,8 +160,17 @@ function resolveAnimation(
   return animation; // manual animation object
 }
 
+export enum SheetPresentationControllerDetent {
+  /// A system detent for a sheet at full height.
+  large = 'large',
+
+  /// A system detent for a sheet that’s approximately half the height of the screen, and is inactive in compact height.
+  medium = 'medium',
+}
+
 export interface PageSheetConfig {
-  detents: string[];
+  detents: SheetPresentationControllerDetent[];
+  largestUndimmedDetentIdentifier?: SheetPresentationControllerDetent;
   prefersGrabberVisible?: boolean;
   preferredCornerRadius?: number;
   prefersEdgeAttachedInCompactHeight?: boolean;
@@ -189,12 +198,17 @@ export enum ViewControllerModalPresentationStyle {
   overFullScreen = 5,
 }
 
-interface SafariViewControllerOptions {
+export enum SafariViewControllerDismissButtonStyle {
+  done = 0,
+  close = 1,
+  cancel = 2,
+}
+export interface SafariViewControllerOptions {
   preferredBarTintColor?: number;
   preferredControlTintColor?: number;
   barCollapsingEnabled?: boolean;
   entersReaderIfAvailable?: boolean;
-  dismissButtonStyle?: number;
+  dismissButtonStyle?: SafariViewControllerDismissButtonStyle;
   modalPresentationStyle?: ViewControllerModalPresentationStyle;
   pageSheet?: PageSheetConfig;
 }

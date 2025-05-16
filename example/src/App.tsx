@@ -5,6 +5,7 @@ import {
   CustomTabsShareState,
   launch,
   multiply,
+  SheetPresentationControllerDetent,
   ViewControllerModalPresentationStyle,
 } from 'react-native-custom-tabs';
 import { Text, View, StyleSheet, Button, Dimensions } from 'react-native';
@@ -47,7 +48,7 @@ export default function App() {
               modalPresentationStyle:
                 ViewControllerModalPresentationStyle.pageSheet,
               pageSheet: {
-                detents: ['large'],
+                detents: [SheetPresentationControllerDetent.large],
                 preferredCornerRadius: 16,
               },
             }
