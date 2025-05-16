@@ -236,11 +236,11 @@ function launch(
   }
 }
 
-function closeCustomTabs(): Promise<String> {
+function close(): Promise<String> {
   return CustomTabs.closeAllIfPossible();
 }
 
 export const ReactNativeCustomTabs = {
   launch,
-  closeCustomTabs,
+  close,
 };

@@ -23,7 +23,7 @@ export default function App() {
       <Button
         title="Close"
         onPress={async () => {
-          await ReactNativeCustomTabs.closeCustomTabs();
+          await ReactNativeCustomTabs.close();
         }}
       />
       <Button
