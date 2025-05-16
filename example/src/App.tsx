@@ -1,9 +1,8 @@
-import {
+import ReactNativeCustomTabs, {
   CustomTabsActivityHeightResizeBehavior,
   CustomTabsCloseButtonPosition,
   CustomTabsShareState,
   multiply,
-  ReactNativeCustomTabs,
   SheetPresentationControllerDetent,
   ViewControllerModalPresentationStyle,
 } from 'react-native-custom-tabs';
