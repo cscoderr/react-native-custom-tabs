@@ -244,3 +244,5 @@ export const ReactNativeCustomTabs = {
   launch,
   close,
 };
+
+export default ReactNativeCustomTabs;
