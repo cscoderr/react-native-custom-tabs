@@ -1,10 +1,9 @@
 import {
-  closeCustomTabs,
   CustomTabsActivityHeightResizeBehavior,
   CustomTabsCloseButtonPosition,
   CustomTabsShareState,
-  launch,
   multiply,
+  ReactNativeCustomTabs,
   SheetPresentationControllerDetent,
   ViewControllerModalPresentationStyle,
 } from 'react-native-custom-tabs';
@@ -24,16 +23,14 @@ export default function App() {
       <Button
         title="Close"
         onPress={async () => {
-          await closeCustomTabs();
+          await ReactNativeCustomTabs.closeCustomTabs();
         }}
       />
       <Button
         title="Launch URL"
         onPress={async () => {
-          await launch(
-            'https://www.google.com',
-            false,
-            {
+          await ReactNativeCustomTabs.launch('https://www.google.com', {
+            customTabsOptions: {
               shareState: CustomTabsShareState.off,
               closeButton: {
                 position: CustomTabsCloseButtonPosition.start,
@@ -44,15 +41,15 @@ export default function App() {
                   CustomTabsActivityHeightResizeBehavior.fixed,
               },
             },
-            {
+            safariVCOptions: {
               modalPresentationStyle:
                 ViewControllerModalPresentationStyle.pageSheet,
               pageSheet: {
                 detents: [SheetPresentationControllerDetent.large],
                 preferredCornerRadius: 16,
               },
-            }
-          );
+            },
+          });
         }}
       />
     </View>

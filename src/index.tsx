@@ -213,11 +213,17 @@ export interface SafariViewControllerOptions {
   pageSheet?: PageSheetConfig;
 }
 
-export function launch(
+function launch(
   url: String,
-  prefersDeepLink: Boolean = false,
-  customTabsOptions?: Options,
-  safariVCOptions?: SafariViewControllerOptions
+  {
+    prefersDeepLink = false,
+    customTabsOptions,
+    safariVCOptions,
+  }: {
+    prefersDeepLink?: boolean;
+    customTabsOptions?: Options;
+    safariVCOptions?: SafariViewControllerOptions;
+  }
 ): Promise<String> {
   if (Platform.OS === 'android') {
     const animations = resolveAnimation(customTabsOptions?.animations);
@@ -230,6 +236,11 @@ export function launch(
   }
 }
 
-export function closeCustomTabs(): Promise<String> {
+function closeCustomTabs(): Promise<String> {
   return CustomTabs.closeAllIfPossible();
 }
+
+export const ReactNativeCustomTabs = {
+  launch,
+  closeCustomTabs,
+};
