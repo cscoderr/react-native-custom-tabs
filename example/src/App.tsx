@@ -35,16 +35,19 @@ export default function App() {
                 position: CustomTabsCloseButtonPosition.start,
               },
               partial: {
-                initialHeight: Dimensions.get('window').height * 0.95,
+                initialHeight: Dimensions.get('window').height * 0.98,
                 activityHeightResizeBehavior:
-                  CustomTabsActivityHeightResizeBehavior.fixed,
+                  CustomTabsActivityHeightResizeBehavior.adjustable,
               },
             },
             safariVCOptions: {
               modalPresentationStyle:
                 ViewControllerModalPresentationStyle.pageSheet,
               pageSheet: {
-                detents: [SheetPresentationControllerDetent.large],
+                detents: [
+                  SheetPresentationControllerDetent.medium,
+                  SheetPresentationControllerDetent.large,
+                ],
                 preferredCornerRadius: 16,
               },
             },

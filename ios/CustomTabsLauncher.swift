@@ -41,24 +41,26 @@ open class CustomTabsLauncher {
   }
   
   open func dismissAll(completion: (() -> Void)? = nil) {
-    guard let rootViewController = UIWindow.keyWindow?.rootViewController else {
-      completion?()
-      return
-    }
-    
-    var presentedViewController = rootViewController.presentedViewController
-    var presentedViewControllers = [UIViewController]()
-    while presentedViewController != nil {
-      if presentedViewController is SFSafariViewController {
-        presentedViewControllers.append(presentedViewController!)
+    DispatchQueue.main.async {
+      guard let rootViewController = UIWindow.keyWindow?.rootViewController else {
+        completion?()
+        return
       }
-      presentedViewController = presentedViewController!.presentedViewController
+      
+      var presentedViewController = rootViewController.presentedViewController
+      var presentedViewControllers = [UIViewController]()
+      while presentedViewController != nil {
+        if presentedViewController is SFSafariViewController {
+          presentedViewControllers.append(presentedViewController!)
+        }
+        presentedViewController = presentedViewController!.presentedViewController
+      }
+      recursivelyDismissViewControllers(
+        presentedViewControllers,
+        animated: true,
+        completion: completion
+      )
     }
-    recursivelyDismissViewControllers(
-      presentedViewControllers,
-      animated: true,
-      completion: completion
-    )
   }
   
   open func prewarmConnections(to urls: [URL]) -> String? {
