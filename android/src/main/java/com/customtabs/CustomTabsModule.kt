@@ -96,7 +96,7 @@ class CustomTabsModule(val reactContext: ReactApplicationContext) : ReactContext
       val optionsMap = options?.toMap(reactContext)?.filterValues { it != null } as? Map<String, Any> ?: null
       val customTabsOptions = customTabsIntentFactory.createIntentOptions(optionsMap)
       if (externalBrowserLauncher.launch(activity, uri, customTabsOptions)) {
-        return
+        return promise.resolve(null)
       }
 
       val customTabsIntent = customTabsIntentFactory.createIntent(
@@ -105,7 +105,7 @@ class CustomTabsModule(val reactContext: ReactApplicationContext) : ReactContext
         customTabsSessionManager
       )
       if (partialCustomTabsLauncher.launch(activity, uri, customTabsIntent)) {
-        return
+        return promise.resolve(null)
       }
       customTabsIntent.launchUrl(activity, uri)
     } catch (e: ActivityNotFoundException) {
@@ -136,6 +136,7 @@ class CustomTabsModule(val reactContext: ReactApplicationContext) : ReactContext
           val intent = Intent(activity, activity.javaClass)
             .setFlags(FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP)
           activity.startActivity(intent)
+          return promise.resolve(null)
         } catch (ignored: ActivityNotFoundException) {
         }
         break
