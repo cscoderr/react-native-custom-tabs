@@ -2,56 +2,58 @@ import ReactNativeCustomTabs, {
   CustomTabsActivityHeightResizeBehavior,
   CustomTabsCloseButtonPosition,
   CustomTabsShareState,
-  multiply,
   SheetPresentationControllerDetent,
   ViewControllerModalPresentationStyle,
 } from 'react-native-custom-tabs';
-import { Text, View, StyleSheet, Button, Dimensions } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, StyleSheet, Button, Dimensions } from 'react-native';
 
 export default function App() {
-  const [result, setResult] = useState<number | undefined>();
-
-  useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
-
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
       <Button
         title="Close"
         onPress={async () => {
-          await ReactNativeCustomTabs.close();
+          const response = await ReactNativeCustomTabs.close();
+          console.log(response);
         }}
       />
+      <View style={{ height: 20 }} />
       <Button
         title="Launch URL"
         onPress={async () => {
-          await ReactNativeCustomTabs.launch('https://www.google.com', {
-            customTabsOptions: {
-              shareState: CustomTabsShareState.off,
-              closeButton: {
-                position: CustomTabsCloseButtonPosition.start,
+          setTimeout(async () => {
+            console.log('Closing after 100ms');
+            const res = await ReactNativeCustomTabs.close();
+            console.log(res);
+          }, 100);
+          const res = await ReactNativeCustomTabs.launch(
+            'https://www.google.com',
+            {
+              customTabsOptions: {
+                shareState: CustomTabsShareState.off,
+                closeButton: {
+                  position: CustomTabsCloseButtonPosition.start,
+                },
+                partial: {
+                  initialHeight: Dimensions.get('window').height * 0.98,
+                  activityHeightResizeBehavior:
+                    CustomTabsActivityHeightResizeBehavior.adjustable,
+                },
               },
-              partial: {
-                initialHeight: Dimensions.get('window').height * 0.98,
-                activityHeightResizeBehavior:
-                  CustomTabsActivityHeightResizeBehavior.adjustable,
+              safariVCOptions: {
+                modalPresentationStyle:
+                  ViewControllerModalPresentationStyle.pageSheet,
+                pageSheet: {
+                  detents: [
+                    SheetPresentationControllerDetent.medium,
+                    SheetPresentationControllerDetent.large,
+                  ],
+                  preferredCornerRadius: 16,
+                },
               },
-            },
-            safariVCOptions: {
-              modalPresentationStyle:
-                ViewControllerModalPresentationStyle.pageSheet,
-              pageSheet: {
-                detents: [
-                  SheetPresentationControllerDetent.medium,
-                  SheetPresentationControllerDetent.large,
-                ],
-                preferredCornerRadius: 16,
-              },
-            },
-          });
+            }
+          );
+          console.log(res);
         }}
       />
     </View>

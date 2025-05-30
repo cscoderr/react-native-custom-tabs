@@ -17,10 +17,6 @@ const CustomTabs = NativeModules.CustomTabs
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return CustomTabs.multiply(a, b);
-}
-
 // const eventEmitter = new NativeEventEmitter(NativeModules.YourNativeModule); // Replace with your module name
 // eventEmitter.addListener('CustomTabsLog', (message) => {
 //   console.log('[Android Log]', message);
@@ -214,7 +210,7 @@ export interface SafariViewControllerOptions {
 }
 
 function launch(
-  url: String,
+  url: string,
   {
     prefersDeepLink = false,
     customTabsOptions,
@@ -224,7 +220,7 @@ function launch(
     customTabsOptions?: Options;
     safariVCOptions?: SafariViewControllerOptions;
   }
-): Promise<String> {
+): Promise<boolean> {
   if (Platform.OS === 'android') {
     const animations = resolveAnimation(customTabsOptions?.animations);
     return CustomTabs.launch(url, prefersDeepLink, {
@@ -236,7 +232,8 @@ function launch(
   }
 }
 
-function close(): Promise<String> {
+function close(): Promise<boolean> {
+  console.log('Closing custom tabs');
   return CustomTabs.closeAllIfPossible();
 }
 

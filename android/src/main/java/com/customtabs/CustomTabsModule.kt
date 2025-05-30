@@ -70,78 +70,178 @@ class CustomTabsModule(val reactContext: ReactApplicationContext) : ReactContext
   override fun getName(): String {
     return NAME
   }
+//  @ReactMethod
+//  fun launch(urlString: String, prefersDeepLink: Boolean, options: ReadableMap?, promise: Promise) {
+//    val activity = reactContext.currentActivity
+//      ?: return promise.reject(
+//        CODE_LAUNCH_ERROR,
+//        "Launching a Custom Tab requires a foreground activity"
+//      )
+//
+//    val uri = urlString.toUri()
+//    if (prefersDeepLink && nativeAppLauncher.launch(activity, uri)) {
+//      return
+//    }
+//
+//    try {
+//      @Suppress("UNCHECKED_CAST")
+//      val optionsMap = options?.toMap(reactContext)?.filterValues { it != null } as? Map<String, Any> ?: null
+//      val customTabsOptions = customTabsIntentFactory.createIntentOptions(optionsMap)
+//      if (externalBrowserLauncher.launch(activity, uri, customTabsOptions)) {
+//        return promise.resolve(true)
+//      }
+//
+//      val customTabsIntent = customTabsIntentFactory.createIntent(
+//        activity,
+//        requireNotNull(customTabsOptions),
+//        customTabsSessionManager
+//      )
+//      if (partialCustomTabsLauncher.launch(activity, uri, customTabsIntent)) {
+//        return promise.resolve(true)
+//      }
+//      customTabsIntent.launchUrl(activity, uri)
+//    } catch (e: ActivityNotFoundException) {
+//      promise.reject(CODE_LAUNCH_ERROR, e.message)
+//    }
+//  }
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
   @ReactMethod
-  fun multiply(a: Double, b: Double, promise: Promise) {
-    promise.resolve(a * b)
-  }
-
-  @ReactMethod
-  fun launch(urlString: String, prefersDeepLink: Boolean, options: ReadableMap?, promise: Promise) {
+  fun launch(
+    urlString: String,
+    prefersDeepLink: Boolean,
+    options: ReadableMap?,
+    promise: Promise
+  ) {
     val activity = reactContext.currentActivity
-      ?: return promise.reject(
+    if (activity == null) {
+      promise.reject(
         CODE_LAUNCH_ERROR,
         "Launching a Custom Tab requires a foreground activity"
       )
+      return
+    }
 
     val uri = urlString.toUri()
+
+    // Try native app deep link if preferred
     if (prefersDeepLink && nativeAppLauncher.launch(activity, uri)) {
+      promise.resolve(true)
       return
     }
 
     try {
+      // Safely parse and filter options
       @Suppress("UNCHECKED_CAST")
-      val optionsMap = options?.toMap(reactContext)?.filterValues { it != null } as? Map<String, Any> ?: null
+      val optionsMap = options
+        ?.toMap(reactContext)
+        ?.filterValues { it != null } as? Map<String, Any>
+
       val customTabsOptions = customTabsIntentFactory.createIntentOptions(optionsMap)
+
+      // Try external browser launch
       if (externalBrowserLauncher.launch(activity, uri, customTabsOptions)) {
-        return promise.resolve(null)
+        promise.resolve(true)
+        return
       }
 
+      // Fallback to Custom Tab launch
       val customTabsIntent = customTabsIntentFactory.createIntent(
         activity,
         requireNotNull(customTabsOptions),
         customTabsSessionManager
       )
+
       if (partialCustomTabsLauncher.launch(activity, uri, customTabsIntent)) {
-        return promise.resolve(null)
+        promise.resolve(true)
+        return
       }
+
+      // Final fallback: direct custom tab launch
       customTabsIntent.launchUrl(activity, uri)
+      promise.resolve(true)
     } catch (e: ActivityNotFoundException) {
       promise.reject(CODE_LAUNCH_ERROR, e.message)
     }
   }
 
+
   @ReactMethod
   fun closeAllIfPossible(promise: Promise) {
-    val activity = reactContext.currentActivity
-      ?: return;
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+//    val activity = reactContext.currentActivity
+//      ?: return;
+    closeActivityIfCustomTabsPresent(reactContext.currentActivity, promise)
+//    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+//      return
+//    }
+//
+//    val am = activity.getSystemService<ActivityManager>()
+//    val selfActivityName = ComponentName(activity, activity.javaClass)
+//    for (appTask in requireNotNull(am).appTasks) {
+//      val taskInfo = appTask.taskInfo
+//      if (selfActivityName != taskInfo.baseActivity || taskInfo.topActivity == null) {
+//        continue
+//      }
+//
+//      val serviceIntent = Intent(ACTION_CUSTOM_TABS_CONNECTION)
+//        .setPackage(taskInfo.topActivity?.packageName)
+//      if (resolveService(activity.packageManager, serviceIntent) != null) {
+//        try {
+//          val intent = Intent(activity, activity.javaClass)
+//            .setFlags(FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP)
+//          activity.startActivity(intent)
+//        } catch (ignored: ActivityNotFoundException) {
+//        }
+//        break
+//      }
+//    }
+  }
+
+  private fun closeActivityIfCustomTabsPresent(activity: Activity?, promise: Promise) {
+    if (activity == null) {
+      promise.reject("NO_ACTIVITY", "Current activity is null")
       return
     }
 
-    val am = activity.getSystemService<ActivityManager>()
-    val selfActivityName = ComponentName(activity, activity.javaClass)
-    for (appTask in requireNotNull(am).appTasks) {
-      val taskInfo = appTask.taskInfo
-      if (selfActivityName != taskInfo.baseActivity || taskInfo.topActivity == null) {
-        continue
-      }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+      promise.reject("UNSUPPORTED_VERSION", "Requires Android Marshmallow (API 23) or higher")
+      return
+    }
+
+    val am = activity.getSystemService(ActivityManager::class.java) ?: run {
+      promise.reject("NO_ACTIVITY_MANAGER", "Unable to access ActivityManager")
+      return
+    }
+
+    val selfComponent = ComponentName(activity, activity.javaClass)
+
+    for (task in am.appTasks) {
+      val info = task.taskInfo ?: continue
+
+      val isCurrentActivity = info.baseActivity == selfComponent && info.topActivity != null
+      if (!isCurrentActivity) continue
 
       val serviceIntent = Intent(ACTION_CUSTOM_TABS_CONNECTION)
-        .setPackage(taskInfo.topActivity?.packageName)
+        .setPackage(info.topActivity?.packageName)
+
       if (resolveService(activity.packageManager, serviceIntent) != null) {
         try {
-          val intent = Intent(activity, activity.javaClass)
-            .setFlags(FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP)
-          activity.startActivity(intent)
-        } catch (ignored: ActivityNotFoundException) {
+          val restartIntent = Intent(activity, activity.javaClass).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+          }
+          activity.startActivity(restartIntent)
+          promise.resolve(true)
+          return
+        } catch (e: ActivityNotFoundException) {
+          promise.reject("ACTIVITY_NOT_FOUND", "Could not restart activity", e)
+          return
         }
-        break
       }
     }
+
+    // No matching task/service found
+    promise.reject("NO_MATCHING_TASK", "No Custom Tabs-related task found to close")
   }
+
 
   @ReactMethod
   fun warmup(options: ReadableMap?, promise: Promise) {
