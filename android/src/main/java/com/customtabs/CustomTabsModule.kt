@@ -136,7 +136,6 @@ class CustomTabsModule(val reactContext: ReactApplicationContext) : ReactContext
           val intent = Intent(activity, activity.javaClass)
             .setFlags(FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP)
           activity.startActivity(intent)
-          return promise.resolve(null)
         } catch (ignored: ActivityNotFoundException) {
         }
         break
